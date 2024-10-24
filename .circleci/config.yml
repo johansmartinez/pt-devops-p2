@@ -57,33 +57,15 @@ jobs:
               ]
             }
 
-  notify_failure:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "La ejecución se realizó correctamente",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
+      - build:
+          context: slack-secrets
       - test:
+          context: slack-secrets
           requires:
             - build
           
