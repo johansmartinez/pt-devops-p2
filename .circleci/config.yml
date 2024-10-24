@@ -15,19 +15,6 @@ jobs:
       - run:
           name: "Verificar salida del script"
           command: cat result.txt
-
-  test:
-    docker:
-      - image: bats/bats:latest
-    steps:
-      - checkout
-      - run:
-          name: "Ejecutar pruebas con bats"
-          command: bats tests/test_script.bats
-  notify_success:
-    docker:
-      - image: cimg/base:stable
-    steps:
       - slack/notify:
           custom: |
             {
@@ -37,7 +24,32 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "La ejecución se realizó correctamente",
+                      "text": "Finalizando ejecución del build",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+
+  test:
+    docker:
+      - image: bats/bats:latest
+    steps:
+      - checkout
+      - run:
+          name: "Ejecutar pruebas con bats"
+          command: bats tests/test_script.bats
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Finalizando ejecución de los test",
                       "emoji": true
                     }
                   ]
@@ -74,21 +86,4 @@ workflows:
       - test:
           requires:
             - build
-      - notify_success:
-          context: slack-secrets
-          requires:
-            - build
-            - test
-          filters:
-            branches:
-              only: main
-          when: on_success
-      - notify_failure:
-          context: slack-secrets
-          requires:
-            - build
-            - test
-          filters:
-            branches:
-              only: main
-          when: on_failure
+          
