@@ -1,0 +1,70 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: "Compilar script Bash - Verificar número primo"
+          command: |
+            chmod +x scripts/is_prime.sh
+            ./scripts/is_prime.sh 0 > result.txt
+      - run:
+          name: "Verificar salida del script"
+          command: cat result.txt
+
+  test:
+    docker:
+      - image: bats/bats:latest
+    steps:
+      - checkout
+      - run:
+          name: "Ejecutar pruebas con bats"
+          command: bats tests/test_script.bats
+
+  notify_success:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: "Ejecutar script de notificación - Éxito"
+          command: |
+            chmod +x scripts/notify.sh
+            ./scripts/notify.sh "Éxito"
+
+  notify_failure:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: "Ejecutar script de notificación - Fallo"
+          command: |
+            chmod +x scripts/notify.sh
+            ./scripts/notify.sh "Fallo"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - notify_success:
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: main
+          when: on_success
+      - notify_failure:
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: main
+          when: on_failure
