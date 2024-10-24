@@ -24,7 +24,7 @@ jobs:
       - run:
           name: "Ejecutar pruebas con bats"
           command: bats tests/test_script.bats
-  notify:
+  notify_success:
     docker:
       - image: cimg/base:stable
     steps:
