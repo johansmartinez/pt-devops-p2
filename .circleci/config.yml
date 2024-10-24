@@ -24,25 +24,25 @@ jobs:
           name: "Ejecutar pruebas con bats"
           command: bats tests/test_script.bats
 
-  notify_success:
-    docker:
-      - image: circleci/python:3.8
-    steps:
-      - run:
-          name: "Ejecutar script de notificación - Éxito"
-          command: |
-            chmod +x scripts/notify.sh
-            ./scripts/notify.sh "Éxito"
+  #notify_success:
+  #  docker:
+  #    - image: circleci/python:3.8
+  #  steps:
+  #    - run:
+  #        name: "Ejecutar script de notificación - Éxito"
+  #        command: |
+  #          chmod +x scripts/notify.sh
+  #          ./scripts/notify.sh "Éxito"
 
-  notify_failure:
-    docker:
-      - image: circleci/python:3.8
-    steps:
-      - run:
-          name: "Ejecutar script de notificación - Fallo"
-          command: |
-            chmod +x scripts/notify.sh
-            ./scripts/notify.sh "Fallo"
+  #notify_failure:
+  #  docker:
+  #    - image: circleci/python:3.8
+  #  steps:
+  #    - run:
+  #        name: "Ejecutar script de notificación - Fallo"
+  #        command: |
+  #          chmod +x scripts/notify.sh
+  #          ./scripts/notify.sh "Fallo"
 
 workflows:
   version: 2
@@ -52,19 +52,19 @@ workflows:
       - test:
           requires:
             - build
-      - notify_success:
-          requires:
-            - build
-            - test
-          filters:
-            branches:
-              only: main
-          when: on_success
-      - notify_failure:
-          requires:
-            - build
-            - test
-          filters:
-            branches:
-              only: main
-          when: on_failure
+      #- notify_success:
+      #    requires:
+      #      - build
+      #      - test
+      #    filters:
+      #      branches:
+      #        only: main
+      #    when: on_success
+      #- notify_failure:
+      #    requires:
+      #      - build
+      #      - test
+      #    filters:
+      #      branches:
+      #        only: main
+      #    when: on_failure
