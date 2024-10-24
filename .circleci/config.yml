@@ -26,6 +26,27 @@ jobs:
           name: "Ejecutar pruebas con bats"
           command: bats tests/test_script.bats
 
+  notify:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Finalizando ejecución de los jobs de build y test",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+
 workflows:
   version: 2
   build_and_test:
@@ -36,22 +57,7 @@ workflows:
           context: slack-secrets
           requires:
             - build
-      - slack/notify:
+      - notify:
           context: slack-secrets
           requires:
             - test
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "Finalizando ejecución de la pipeline",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
