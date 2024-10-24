@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs:
+  slack: circleci/slack@5.0.0
 jobs:
   build:
     docker:
@@ -23,26 +24,47 @@ jobs:
       - run:
           name: "Ejecutar pruebas con bats"
           command: bats tests/test_script.bats
+  notify:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "La ejecución se realizó correctamente",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
 
-  #notify_success:
-  #  docker:
-  #    - image: circleci/python:3.8
-  #  steps:
-  #    - run:
-  #        name: "Ejecutar script de notificación - Éxito"
-  #        command: |
-  #          chmod +x scripts/notify.sh
-  #          ./scripts/notify.sh "Éxito"
-
-  #notify_failure:
-  #  docker:
-  #    - image: circleci/python:3.8
-  #  steps:
-  #    - run:
-  #        name: "Ejecutar script de notificación - Fallo"
-  #        command: |
-  #          chmod +x scripts/notify.sh
-  #          ./scripts/notify.sh "Fallo"
+  notify_failure:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "La ejecución se realizó correctamente",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
 
 workflows:
   version: 2
@@ -52,19 +74,21 @@ workflows:
       - test:
           requires:
             - build
-      #- notify_success:
-      #    requires:
-      #      - build
-      #      - test
-      #    filters:
-      #      branches:
-      #        only: main
-      #    when: on_success
-      #- notify_failure:
-      #    requires:
-      #      - build
-      #      - test
-      #    filters:
-      #      branches:
-      #        only: main
-      #    when: on_failure
+      - notify_success:
+          context: slack-secrets
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: main
+          when: on_success
+      - notify_failure:
+          context: slack-secrets
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: main
+          when: on_failure
