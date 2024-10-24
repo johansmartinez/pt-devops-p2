@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   slack: circleci/slack@5.0.0
+
 jobs:
   build:
     docker:
@@ -15,22 +16,6 @@ jobs:
       - run:
           name: "Verificar salida del script"
           command: cat result.txt
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "Finalizando ejecución del build",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
 
   test:
     docker:
@@ -40,23 +25,6 @@ jobs:
       - run:
           name: "Ejecutar pruebas con bats"
           command: bats tests/test_script.bats
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "Finalizando ejecución de los test",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
-
 
 workflows:
   version: 2
@@ -68,4 +36,22 @@ workflows:
           context: slack-secrets
           requires:
             - build
-          
+      - slack/notify:
+          context: slack-secrets
+          requires:
+            - test
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Finalizando ejecución de la pipeline",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
